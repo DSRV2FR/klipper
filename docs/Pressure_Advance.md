@@ -1,147 +1,61 @@
-# Pressure advance
+﻿# Pressure advance
 
-This document provides information on tuning the "pressure advance"
-configuration variable for a particular nozzle and filament. The
-pressure advance feature can be helpful in reducing ooze. For more
-information on how pressure advance is implemented see the
-[kinematics](Kinematics.md) document.
+Ce document fournit des informations sur le réglage de la variable de configuration « avance de pression » pour une buse et un filament particuliers. La fonction d'avance de pression peut être utile pour réduire le suintement. Pour plus d'informations sur la façon dont l'avance de pression est mise en œuvre, voir le document [kinematics](Kinematics.md).
 
-## Tuning pressure advance
+## Réglage pressure advance
 
-Pressure advance does two useful things - it reduces ooze during
-non-extrude moves and it reduces blobbing during cornering. This guide
-uses the second feature (reducing blobbing during cornering) as a
-mechanism for tuning.
+Pressure advance fait deux choses utiles - il réduit le suintement pendant les mouvements sans extrusion et il réduit les bavures pendant les virages. Ce guide utilise la deuxième fonctionnalité (réduction du blobbing dans les virages) comme mécanisme de réglage.
 
-In order to calibrate pressure advance the printer must be configured
-and operational as the tuning test involves printing and inspecting a
-test object. It is a good idea to read this document in full prior to
-running the test.
+In order to calibrate pressure advance the printer must be configured and operational as the tuning test involves printing and inspecting a test object. It is a good idea to read this document in full prior to running the test.
 
-Use a slicer to generate g-code for the large hollow square found in
-[docs/prints/square_tower.stl](prints/square_tower.stl). Use a high
-speed (eg, 100mm/s), zero infill, and a coarse layer height (the layer
-height should be around 75% of the nozzle diameter). Make sure any
-"dynamic acceleration control" is disabled in the slicer.
+Utilisez un trancheur pour générer le g-code pour le grand carré creux trouvé dans [docs/prints/square_tower.stl](prints/square_tower.stl). Utilisez une vitesse élevée (par exemple, 100 mm/s), un remplissage nul et une hauteur de couche grossière (la hauteur de couche doit être d'environ 75 % du diamètre de la buse). Assurez-vous que tout "contrôle d'accélération dynamique" est désactivé dans le slicer.
 
-Prepare for the test by issuing the following G-Code command:
+Préparez-vous pour le test en émettant la commande G-Code suivante:
 ```
 SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=1 ACCEL=500
 ```
-This command makes the nozzle travel slower through corners to
-emphasize the effects of extruder pressure. Then for printers with a
-direct drive extruder run the command:
+Cette commande ralentit le déplacement de la buse dans les coins pour accentuer les effets de la pression de l'extrudeuse. Ensuite, pour les imprimantes avec une extrudeuse à entraînement direct, exécutez la commande:
 ```
 TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005
 ```
-For long bowden extruders use:
+Pour les extrudeuses Bowden longues, utilisez:
 ```
 TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.020
 ```
-Then print the object. When fully printed the test print looks like:
+Puis imprimez l'objet. Une fois entièrement imprimé, le test d'impression ressemble à :
 
 ![tuning_tower](img/tuning_tower.jpg)
 
-The above TUNING_TOWER command instructs Klipper to alter the
-pressure_advance setting on each layer of the print. Higher layers in
-the print will have a larger pressure advance value set. Layers below
-the ideal pressure_advance setting will have blobbing at the corners,
-and layers above the ideal setting can lead to rounded corners and
-poor extrusion leading up to the corner.
+La commande TUNING_TOWER ci-dessus demande à Klipper de modifier le paramètre pressure_advance sur chaque couche de l'impression. Les couches supérieures de l'impression auront une valeur d'avance de pression plus élevée. Les calques en dessous du réglage de pression_avance idéal auront des taches dans les coins, et les calques au-dessus du réglage idéal peuvent conduire à des coins arrondis et à une mauvaise extrusion menant au coin.
 
-One can cancel the print early if one observes that the corners are no
-longer printing well (and thus one can avoid printing layers that are
-known to be above the ideal pressure_advance value).
+On peut annuler l'impression plus tôt si l'on constate que les coins ne s'impriment plus bien (et ainsi on peut éviter d'imprimer des couches dont on sait qu'elles sont au-dessus de la valeur idéale de pression_avance).
 
-Inspect the print and then use a digital calipers to find the height
-that has the best quality corners. When in doubt, prefer a lower
-height.
+Inspectez l'impression, puis utilisez un pied à coulisse numérique pour trouver la hauteur qui a les meilleurs coins de qualité. En cas de doute, préférez une hauteur inférieure.
 
 ![tune_pa](img/tune_pa.jpg)
 
-The pressure_advance value can then be calculated as `pressure_advance
-= <start> + <measured_height> * <factor>`. (For example, `0 + 12.90 *
-.020` would be `.258`.)
+La valeur pressure_advance peut alors être calculée comme `pressure_advance = <start> + <measured_height> * <factor>`. (For example, `0 + 12.90 * .020` would be `.258`.)
 
-It is possible to choose custom settings for START and FACTOR if that
-helps identify the best pressure advance setting. When doing this, be
-sure to issue the TUNING_TOWER command at the start of each test
-print.
+Il est possible de choisir des réglages personnalisés pour START et FACTOR si cela permet d'identifier le meilleur réglage d'avance de pression. Ce faisant, assurez-vous d'émettre la commande TUNING_TOWER au début de chaque test d'impression.
 
-Typical pressure advance values are between 0.050 and 1.000 (the high
-end usually only with bowden extruders). If there is no significant
-improvement with a pressure advance up to 1.000, then pressure advance
-is unlikely to improve the quality of prints. Return to a default
-configuration with pressure advance disabled.
+Les valeurs d'avance de pression typiques sont comprises entre 0,050 et 1,000 (le haut de gamme généralement uniquement avec les extrudeuses Bowden). S'il n'y a pas d'amélioration significative avec une avance de pression jusqu'à 1 000, il est peu probable que l'avance de pression améliore la qualité des impressions. Retour à une configuration par défaut avec avance de pression désactivée.
 
-Although this tuning exercise directly improves the quality of
-corners, it's worth remembering that a good pressure advance
-configuration also reduces ooze throughout the print.
+Bien que cet exercice de réglage améliore directement la qualité des coins, il convient de rappeler qu'une bonne configuration d'avance de pression réduit également le suintement tout au long de l'impression.
 
-At the completion of this test, set
-`pressure_advance = <calculated_value>` in the `[extruder]` section of
-the configuration file and issue a RESTART command. The RESTART
-command will clear the test state and return the acceleration and
-cornering speeds to their normal values.
+A la fin de ce test, réglez `pressure_advance = <calculated_value>` dans la section `[extruder]` du fichier de configuration et émettez une commande RESTART. La commande RESTART effacera l'état de test et renverra l'accélération et vitesses de virage à leurs valeurs normales.
 
-## Important Notes
+## Notes IMPORTANTES
 
-* The pressure advance value is dependent on the extruder, the nozzle,
-  and the filament. It is common for filament from different
-  manufactures or with different pigments to require significantly
-  different pressure advance values. Therefore, one should calibrate
-  pressure advance on each printer and with each spool of filament.
+* La valeur d'avance de pression dépend de l'extrudeuse, de la buse et du filament. Il est courant que les filaments de différents fabricants ou avec différents pigments nécessitent des valeurs d'avance de pression très différentes. Par conséquent, il faut calibrer l'avance de pression sur chaque imprimante et avec chaque bobine de filament.
 
-* Printing temperature and extrusion rates can impact pressure
-  advance. Be sure to tune the
-  [extruder rotation_distance](Rotation_Distance.md#calibrating-rotation_distance-on-extruders)
-  and
-  [nozzle temperature](http://reprap.org/wiki/Triffid_Hunter%27s_Calibration_Guide#Nozzle_Temperature)
-  prior to tuning pressure advance.
+* La température d'impression et les taux d'extrusion peuvent avoir un impact sur l'avance de pression. Assurez-vous d'accorder le [extruder rotation_distance](Rotation_Distance.md#calibrating-rotation_distance-on-extruders) et [nozzle temperature](http://reprap.org/wiki/Triffid_Hunter%27s_Calibration_Guide#Nozzle_Temperature) avant de régler l'avance de pression.
 
-* The test print is designed to run with a high extruder flow rate,
-  but otherwise "normal" slicer settings. A high flow rate is obtained
-  by using a high printing speed (eg, 100mm/s) and a coarse layer
-  height (typically around 75% of the nozzle diameter). Other slicer
-  settings should be similar to their defaults (eg, perimeters of 2 or
-  3 lines, normal retraction amount). It can be useful to set the
-  external perimeter speed to be the same speed as the rest of the
-  print, but it is not a requirement.
+* L'impression de test est conçue pour fonctionner avec un débit d'extrudeuse élevé, mais sinon avec des paramètres de trancheuse "normaux". Un débit élevé est obtenu en utilisant une vitesse d'impression élevée (par exemple, 100 mm/s) et une hauteur de couche grossière (typiquement autour de 75 % du diamètre de la buse). Les autres paramètres du slicer doivent être similaires à leurs valeurs par défaut (par exemple, périmètres de 2 ou 3 lignes, quantité de rétraction normale). Il peut être utile de régler la vitesse du périmètre externe sur la même vitesse que le reste de l'impression, mais ce n'est pas obligatoire.
 
-* It is common for the test print to show different behavior on each
-  corner. Often the slicer will arrange to change layers at one corner
-  which can result in that corner being significantly different from
-  the remaining three corners. If this occurs, then ignore that corner
-  and tune pressure advance using the other three corners. It is also
-  common for the remaining corners to vary slightly. (This can occur
-  due to small differences in how the printer's frame reacts to
-  cornering in certain directions.) Try to choose a value that works
-  well for all the remaining corners. If in doubt, prefer a lower
-  pressure advance value.
+* Il est courant que le test d'impression montre un comportement différent sur chaque coin. Souvent, le trancheur s'arrangera pour changer les couches à un coin, ce qui peut entraîner une différence significative entre ce coin et les trois coins restants. Si cela se produit, ignorez ce coin et réglez l'avance de la pression en utilisant les trois autres coins. Il est également courant que les coins restants varient légèrement. (Cela peut se produire en raison de petites différences dans la façon dont le cadre de l'imprimante réagit aux virages dans certaines directions.) Essayez de choisir une valeur qui fonctionne bien pour tous les coins restants. En cas de doute, préférez une valeur d'avance à la pression inférieure.
 
-* If a high pressure advance value (eg, over 0.200) is used then one
-  may find that the extruder skips when returning to the printer's
-  normal acceleration. The pressure advance system accounts for
-  pressure by pushing in extra filament during acceleration and
-  retracting that filament during deceleration. With a high
-  acceleration and high pressure advance the extruder may not have
-  enough torque to push the required filament. If this occurs, either
-  use a lower acceleration value or disable pressure advance.
+* Si une valeur d'avance de pression élevée (par exemple, supérieure à 0,200) est utilisée, il se peut que l'extrudeuse saute lors du retour à l'accélération normale de l'imprimante. Le système d'avance de pression tient compte de la pression en poussant un filament supplémentaire pendant l'accélération et en rétractant ce filament pendant la décélération. Avec une accélération élevée et une avance à haute pression, l'extrudeuse peut ne pas avoir assez de couple pour pousser le filament requis. Si cela se produit, utilisez une valeur d'accélération inférieure ou désactivez l'avance de pression.
 
-* Once pressure advance is tuned in Klipper, it may still be useful to
-  configure a small retract value in the slicer (eg, 0.75mm) and to
-  utilize the slicer's "wipe on retract option" if available. These
-  slicer settings may help counteract ooze caused by filament cohesion
-  (filament pulled out of the nozzle due to the stickiness of the
-  plastic). It is recommended to disable the slicer's "z-lift on
-  retract" option.
+* Une fois que l'avance de pression est réglée dans Klipper, il peut toujours être utile de configurer une petite valeur de rétraction dans la trancheuse (par exemple, 0,75 mm) et d'utiliser l'option "essuyer lors de la rétraction" de la trancheuse si elle est disponible. Ces réglages de trancheuse peuvent aider à contrecarrer le suintement causé par la cohésion du filament (filament retiré de la buse en raison de l'adhérence du plastique). Il est recommandé de désactiver l'option "z-lift on retract" du slicer.
 
-* The pressure advance system does not change the timing or path of
-  the toolhead. A print with pressure advance enabled will take the
-  same amount of time as a print without pressure advance. Pressure
-  advance also does not change the total amount of filament extruded
-  during a print. Pressure advance results in extra extruder movement
-  during move acceleration and deceleration. A very high pressure
-  advance setting will result in a very large amount of extruder
-  movement during acceleration and deceleration, and no configuration
-  setting places a limit on the amount of that movement.
+* Le système d'avance de pression ne modifie pas la synchronisation ou la trajectoire de la tête d'outil. Une impression avec l'avance de pression activée prendra le même temps qu'une impression sans avance de pression. L'avance de pression ne modifie pas non plus la quantité totale de filament extrudé lors d'une impression. L'avance de pression entraîne un mouvement supplémentaire de l'extrudeuse pendant l'accélération et la décélération du mouvement. Un réglage d'avance de pression très élevé entraînera une très grande quantité de mouvement de l'extrudeuse pendant l'accélération et la décélération, et aucun réglage de configuration ne limite la quantité de ce mouvement.
