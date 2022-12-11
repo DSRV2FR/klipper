@@ -1,42 +1,22 @@
-# Multiple Micro-controller Homing and Probing
+﻿# Multiple Micro-controller Homing et Probing
 
-Klipper supports a mechanism for homing with an endstop attached to
-one micro-controller while its stepper motors are on a different
-micro-controller. This support is referred to as "multi-mcu
-homing". This feature is also used when a Z probe is on a different
-micro-controller than the Z stepper motors.
+Klipper prend en charge un mécanisme de prise d'origine avec une butée fixée à
+un microcontrôleur tandis que ses moteurs pas à pas sont sur un autre microcontrôleur. Ce support est appelé "multi-mcu prise d'origine". Cette fonction est également utilisée lorsqu'une sonde Z est sur un autre
+microcontrôleur que les moteurs pas à pas Z.
 
-This feature can be useful to simplify wiring, as it may be more
-convenient to attach an endstop or probe to a closer micro-controller.
-However, using this feature may result in "overshoot" of the stepper
-motors during homing and probing operations.
+Cette fonctionnalité peut être utile pour simplifier le câblage, car il peut être plus pratique pour fixer une butée ou une sonde à un microcontrôleur plus proche. Cependant, l'utilisation de cette fonctionnalité peut entraîner un "dépassement" du stepper moteurs pendant les opérations de prise d'origine et de palpage.
 
-The overshoot occurs due to possible message transmission delays
-between the micro-controller monitoring the endstop and the
-micro-controllers moving the stepper motors. The Klipper code is
-designed to limit this delay to no more than 25ms. (When multi-mcu
-homing is activated, the micro-controllers send periodic status
-messages and check that corresponding status messages are received
-within 25ms.)
+Le dépassement se produit en raison d'éventuels retards de transmission des messages entre le microcontrôleur surveillant la butée et le micro-contrôleurs déplaçant les moteurs pas à pas. Le code Klipper est conçu pour limiter ce retard à pas plus de 25 ms. (Lorsque multi-mcu le homing est activé, les micro-contrôleurs envoient des états périodiques messages et vérifier que les messages d'état correspondants sont reçus dans les 25 ms.)
 
-So, for example, if homing at 10mm/s then it is possible for an
-overshoot of up to 0.250mm (10mm/s * .025s == 0.250mm). Care should be
-taken when configuring multi-mcu homing to account for this type of
-overshoot. Using slower homing or probing speeds can reduce the
-overshoot.
+Ainsi, par exemple, si la prise d'origine à 10 mm/s, il est possible pour un
+dépassement jusqu'à 0,250 mm (10 mm/s * 0,025 s == 0,250 mm). Les soins doivent être prises lors de la configuration de l'hébergement multi-mcu pour tenir compte de ce type de dépasser. L'utilisation de vitesses de prise d'origine ou de palpage plus lentes peut réduire la dépasser.
 
-Stepper motor overshoot should not adversely impact the precision of
-the homing and probing procedure. The Klipper code will detect the
-overshoot and account for it in its calculations. However, it is
-important that the hardware design is capable of handling overshoot
-without causing damage to the machine.
+Le dépassement du moteur pas à pas ne doit pas nuire à la précision de la procédure de prise d'origine et de sondage. Le code Klipper détectera le dépasser et en tenir compte dans ses calculs. Cependant, il est important que la conception matérielle soit capable de gérer les dépassements sans endommager la machine.
 
-Should Klipper detect a communication issue between micro-controllers
-during multi-mcu homing then it will raise a "Communication timeout
-during homing" error.
+Si Klipper détecte un problème de communication entre les microcontrôleurs
+pendant le référencement multi-mcu, il déclenchera un "Délai d'attente de communication lors de la prise d'origine".
 
-Note that an axis with multiple steppers (eg, `stepper_z` and
-`stepper_z1`) need to be on the same micro-controller in order to use
-multi-mcu homing. For example, if an endstop is on a separate
-micro-controller from `stepper_z` then `stepper_z1` must be on the
-same micro-controller as `stepper_z`.
+Notez qu'un axe avec plusieurs steppers (eg, `stepper_z` et
+`stepper_z1`) doivent être sur le même microcontrôleur pour pouvoir utiliser
+référencement multi-mcu. Par exemple, si une butée se trouve sur un autre
+micro-contrôleur de `stepper_z` puis `stepper_z1` doit être sur le même micro-contrôleur que `stepper_z`.
