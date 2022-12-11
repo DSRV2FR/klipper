@@ -1,78 +1,37 @@
-# Rotation distance
+﻿# Rotation distance
 
-Stepper motor drivers on Klipper require a `rotation_distance`
-parameter in each
-[stepper config section](Config_Reference.md#stepper). The
-`rotation_distance` is the amount of distance that the axis moves with
-one full revolution of the stepper motor. This document describes how
-one can configure this value.
+Les pilotes de moteur pas à pas sur Klipper nécessitent un `rotation_distance` paramètre dans chaque [stepper config section](Config_Reference.md#stepper). La `rotation_distance` est la distance parcourue par l'axe avec un tour complet du moteur pas à pas. Ce document décrit comment on peut configurer cette valeur.
 
-## Obtaining rotation_distance from steps_per_mm (or step_distance)
+## Obtention de rotation_distance à partir de steps_per_mm (ou step_distance)
 
-The designers of your 3d printer originally calculated `steps_per_mm`
-from a rotation distance. If you know the steps_per_mm then it is
-possible to use this general formula to obtain that original rotation
-distance:
+Les concepteurs de votre imprimante 3d ont initialement calculé `steps_per_mm` à partir d'une distance de rotation. Si vous connaissez les steps_per_mm, il est alors possible d'utiliser cette formule générale pour obtenir cette distance de rotation d'origine:
 ```
 rotation_distance = <full_steps_per_rotation> * <microsteps> / <steps_per_mm>
 ```
 
-Or, if you have an older Klipper configuration and know the
-`step_distance` parameter you can use this formula:
+Ou, si vous avez une configuration Klipper plus ancienne et connaissez le paramètre `step_distance`, vous pouvez utiliser cette formule:
 ```
 rotation_distance = <full_steps_per_rotation> * <microsteps> * <step_distance>
 ```
 
-The `<full_steps_per_rotation>` setting is determined from the type of
-stepper motor. Most stepper motors are "1.8 degree steppers" and
-therefore have 200 full steps per rotation (360 divided by 1.8 is
-200). Some stepper motors are "0.9 degree steppers" and thus have 400
-full steps per rotation. Other stepper motors are rare. If unsure, do
-not set full_steps_per_rotation in the config file and use 200 in the
-formula above.
+Le paramètre `<full_steps_per_rotation>` est déterminé à partir du type de moteur pas à pas. La plupart des moteurs pas à pas sont des "pas à pas de 1,8 degré" et ont donc 200 pas complets par rotation (360 divisé par 1,8 est 200). Certains moteurs pas à pas sont des "pas à pas de 0,9 degré" et ont donc 400 pas complets par rotation. Les autres moteurs pas à pas sont rares. En cas de doute, ne définissez pas full_steps_per_rotation dans le fichier de configuration et utilisez 200 dans la formule ci-dessus.
 
-The `<microsteps>` setting is determined by the stepper motor driver.
-Most drivers use 16 microsteps. If unsure, set `microsteps: 16` in the
-config and use 16 in the formula above.
+Le paramètre `<microsteps>` est déterminé par le pilote du moteur pas à pas. La plupart des pilotes utilisent 16 micropas. En cas de doute, définissez `microsteps : 16` dans la configuration et utilisez 16 dans la formule ci-dessus.
 
-Almost all printers should have a whole number for `rotation_distance`
-on X, Y, and Z type axes. If the above formula results in a
-rotation_distance that is within .01 of a whole number then round the
-final value to that whole_number.
+Presque toutes les imprimantes doivent avoir un nombre entier pour `rotation_distance` sur les axes de type X, Y et Z. Si la formule ci-dessus donne une rotation_distance inférieure à 0,01 d'un nombre entier, arrondissez la valeur finale à ce nombre entier.
 
-## Calibrating rotation_distance on extruders
+## Étalonnage rotation_distance sur les extrudeuses
 
-On an extruder, the `rotation_distance` is the amount of distance the
-filament travels for one full rotation of the stepper motor. The best
-way to get an accurate value for this setting is to use a "measure and
-trim" procedure.
+Sur une extrudeuse, le`rotation_distance` est la distance parcourue par le filament pour une rotation complète du moteur pas à pas. La meilleure façon d'obtenir une valeur précise pour ce paramètre est d'utiliser la procédure  "measure and trim".
 
-First start with an initial guess for the rotation distance. This may
-be obtained from
-[steps_per_mm](#obtaining-rotation_distance-from-steps_per_mm-or-step_distance)
-or by [inspecting the hardware](#extruder).
+Commencez d'abord par une estimation initiale de la distance de rotation. Celui-ci peut être obtenu auprès de [steps_per_mm](#obtaining-rotation_distance-from-steps_per_mm-or-step_distance) ou par [inspecting the hardware](#extruder).
 
-Then use the following procedure to "measure and trim":
-1. Make sure the extruder has filament in it, the hotend is heated to
-   an appropriate temperature, and the printer is ready to extrude.
-2. Use a marker to place a mark on the filament around 70mm from the
-   intake of the extruder body. Then use a digital calipers to measure
-   the actual distance of that mark as precisely as one can. Note this
-   as `<initial_mark_distance>`.
-3. Extrude 50mm of filament with the following command sequence: `G91`
-   followed by `G1 E50 F60`. Note 50mm as
-   `<requested_extrude_distance>`. Wait for the extruder to finish the
-   move (it will take about 50 seconds). It is important to use the
-   slow extrusion rate for this test as a faster rate can cause high
-   pressure in the extruder which will skew the results. (Do not use
-   the "extrude button" on graphical front-ends for this test as they
-   extrude at a fast rate.)
-4. Use the digital calipers to measure the new distance between the
-   extruder body and the mark on the filament. Note this as
-   `<subsequent_mark_distance>`. Then calculate:
-   `actual_extrude_distance = <initial_mark_distance> - <subsequent_mark_distance>`
-5. Calculate rotation_distance as:
-   `rotation_distance = <previous_rotation_distance> * <actual_extrude_distance> / <requested_extrude_distance>`
+Utilisez ensuite la procédure suivante pour "measure and trim":
+1. Assurez-vous que l'extrudeuse contient du filament, que la hotend est chauffée à une température appropriée et que l'imprimante est prête à extruder.
+2. Utilisez un marqueur pour placer une marque sur le filament à environ 70 mm de l'entrée du corps de l'extrudeur. Utilisez ensuite un pied à coulisse numérique pour mesurer la distance réelle de cette marque aussi précisément que possible. Notez ceci comme `<initial_mark_distance>`.
+3. Extrudez 50 mm de filament avec la séquence de commande suivante : 'G91' suivi de 'G1 E50 F60'. Notez 50 mm comme `<requested_extrude_distance>`. Attendez que l'extrudeuse termine le mouvement (cela prendra environ 50 secondes). Il est important d'utiliser la vitesse d'extrusion lente pour ce test, car une vitesse plus rapide peut provoquer une pression élevée dans l'extrudeuse, ce qui faussera les résultats. (N'utilisez pas le "bouton d'extrusion" sur les frontaux graphiques pour ce test car ils s'extrudent à un rythme rapide.)
+4. Use the digital calipers to measure the new distance between the extruder body and the mark on the filament. Note this as `<subsequent_mark_distance>`. Then calculate: `actual_extrude_distance = <initial_mark_distance> - <subsequent_mark_distance>`
+5. Calculate rotation_distance as: `rotation_distance = <previous_rotation_distance> * <actual_extrude_distance> / <requested_extrude_distance>`
    Round the new rotation_distance to three decimal places.
 
 If the actual_extrude_distance differs from requested_extrude_distance
