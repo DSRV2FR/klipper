@@ -30,112 +30,57 @@ Utilisez ensuite la procédure suivante pour "measure and trim":
 1. Assurez-vous que l'extrudeuse contient du filament, que la hotend est chauffée à une température appropriée et que l'imprimante est prête à extruder.
 2. Utilisez un marqueur pour placer une marque sur le filament à environ 70 mm de l'entrée du corps de l'extrudeur. Utilisez ensuite un pied à coulisse numérique pour mesurer la distance réelle de cette marque aussi précisément que possible. Notez ceci comme `<initial_mark_distance>`.
 3. Extrudez 50 mm de filament avec la séquence de commande suivante : 'G91' suivi de 'G1 E50 F60'. Notez 50 mm comme `<requested_extrude_distance>`. Attendez que l'extrudeuse termine le mouvement (cela prendra environ 50 secondes). Il est important d'utiliser la vitesse d'extrusion lente pour ce test, car une vitesse plus rapide peut provoquer une pression élevée dans l'extrudeuse, ce qui faussera les résultats. (N'utilisez pas le "bouton d'extrusion" sur les frontaux graphiques pour ce test car ils s'extrudent à un rythme rapide.)
-4. Use the digital calipers to measure the new distance between the extruder body and the mark on the filament. Note this as `<subsequent_mark_distance>`. Then calculate: `actual_extrude_distance = <initial_mark_distance> - <subsequent_mark_distance>`
-5. Calculate rotation_distance as: `rotation_distance = <previous_rotation_distance> * <actual_extrude_distance> / <requested_extrude_distance>`
-   Round the new rotation_distance to three decimal places.
+4. Utilisez les pieds à coulisse numériques pour mesurer la nouvelle distance entre le corps de l'extrudeuse et la marque sur le filament. Notez ceci comme `<subsequent_mark_distance>`. Calculez ensuite : `actual_extrude_distance = <initial_mark_distance> - <subsequent_mark_distance>`
+5. Calculez rotation_distance comme : `rotation_distance = <previous_rotation_distance> * <actual_extrude_distance> / <requested_extrude_distance>` Arrondissez la nouvelle distance_rotation à trois décimales.
 
-If the actual_extrude_distance differs from requested_extrude_distance
-by more than about 2mm then it is a good idea to perform the steps
-above a second time.
+Si le actual_extrude_distance diffère de requested_extrude_distance de plus d'environ 2 mm, il est conseillé d'effectuer les étapes ci-dessus une deuxième fois.
 
-Note: Do *not* use a "measure and trim" type of method to calibrate x,
-y, or z type axes. The "measure and trim" method is not accurate
-enough for those axes and will likely lead to a worse configuration.
-Instead, if needed, those axes can be determined by
-[measuring the belts, pulleys, and lead screw hardware](#obtaining-rotation_distance-by-inspecting-the-hardware).
+Remarque : N'utilisez *pas* un "measure and trim" type de méthode pour calibrer les axes de type x, y ou z. La méthode "measure and trim" n'est pas assez précise pour ces axes et conduira probablement à une configuration plus mauvaise. Au lieu de cela, si nécessaire, ces axes peuvent être déterminés par [measuring the belts, pulleys, and lead screw hardware](#obtaining-rotation_distance-by-inspecting-the-hardware).
 
-## Obtaining rotation_distance by inspecting the hardware
+## Obtention de la distance de rotation en inspectant le matériel
 
-It's possible to calculate rotation_distance with knowledge of the
-stepper motors and printer kinematics. This may be useful if the
-steps_per_mm is not known or if designing a new printer.
+Il est possible de calculer rotation_distance en connaissant les moteurs pas à pas et la cinématique de l'imprimante. Cela peut être utile si le steps_per_mm n'est pas connu ou si vous concevez une nouvelle imprimante.
 
-### Belt driven axes
+### Axes entraînés par courroie
 
-It is easy to calculate rotation_distance for a linear axis that uses
-a belt and pulley.
+Il est facile de calculer rotation_distance pour un axe linéaire qui utilise une courroie et une poulie.
 
-First determine the type of belt. Most printers use a 2mm belt pitch
-(that is, each tooth on the belt is 2mm apart). Then count the number
-of teeth on the stepper motor pulley. The rotation_distance is then
-calculated as:
+Déterminez d'abord le type de ceinture. La plupart des imprimantes utilisent un pas de courroie de 2 mm (c'est-à-dire que chaque dent de la courroie est espacée de 2 mm). Comptez ensuite le nombre de dents de la poulie du moteur pas à pas. La rotation_distance est alors calculée comme :
 ```
 rotation_distance = <belt_pitch> * <number_of_teeth_on_pulley>
 ```
 
-For example, if a printer has a 2mm belt and uses a pulley with 20
-teeth, then the rotation distance is 40.
+Par exemple, si une imprimante a une courroie de 2 mm et utilise une poulie à 20 dents, la distance de rotation est de 40.
 
-### Axes with a lead screw
+### Axes avec une vis mère
 
-It is easy to calculate the rotation_distance for common lead screws
-using the following formula:
+Il est facile de calculer la rotation_distance pour les vis-mères courantes à l'aide de la formule suivante: 
 ```
 rotation_distance = <screw_pitch> * <number_of_separate_threads>
 ```
 
-For example, the common "T8 leadscrew" has a rotation distance of 8
-(it has a pitch of 2mm and has 4 separate threads).
+Par exemple, la "vis mère T8" commune a une distance de rotation de 8 (il a un pas de 2mm et possède 4 filetages séparés).
 
-Older printers with "threaded rods" have only one "thread" on the lead
-screw and thus the rotation distance is the pitch of the screw. (The
-screw pitch is the distance between each groove on the screw.) So, for
-example, an M6 metric rod has a rotation distance of 1 and an M8 rod
-has a rotation distance of 1.25.
+Les imprimantes plus anciennes avec des "tiges filetées" n'ont qu'un seul "filetage" sur la vis mère et donc la distance de rotation est le pas de la vis. (Le pas de vis est la distance entre chaque rainure sur la vis.) Ainsi, par exemple, une tige métrique M6 a une distance de rotation de 1 et une tige M8 a une distance de rotation de 1,25.
 
-### Extruder
+### Extrudeur
 
-It's possible to obtain an initial rotation distance for extruders by
-measuring the diameter of the "hobbed bolt" that pushes the filament
-and using the following formula: `rotation_distance = <diameter> * 3.14`
+Il est possible d'obtenir une distance de rotation initiale pour les extrudeuses en mesurant le diamètre du "boulon taré" qui pousse le filament et en utilisant la formule suivante: `rotation_distance = <diameter> * 3.14`
 
-If the extruder uses gears then it will also be necessary to
-[determine and set the gear_ratio](#using-a-gear_ratio) for the
-extruder.
+Si l'extrudeuse utilise des engrenages, il sera également nécessaire de [déterminer et définir le gear_ratio] (#using-a-gear_ratio) pour l'extrudeuse.
 
-The actual rotation distance on an extruder will vary from printer to
-printer, because the grip of the "hobbed bolt" that engages the
-filament can vary. It can even vary between filament spools. After
-obtaining an initial rotation_distance, use the
-[measure and trim procedure](#calibrating-rotation_distance-on-extruders)
-to obtain a more accurate setting.
+La distance de rotation réelle sur une extrudeuse varie d'une imprimante à l'autre, car l'adhérence du "boulon crénelé" qui engage le filament peut varier. Il peut même varier entre les bobines de filament. Après avoir obtenu une rotation_distance initiale, utilisez la [procédure de mesure et de coupe](#calibrating-rotation_distance-on-extruders) pour obtenir un réglage plus précis.
 
-## Using a gear_ratio
+## Utilisant un gear_ratio
 
-Setting a `gear_ratio` can make it easier to configure the
-`rotation_distance` on steppers that have a gear box (or similar)
-attached to it. Most steppers do not have a gear box - if unsure then
-do not set `gear_ratio` in the config.
+La définition d'un `gear_ratio` peut faciliter la configuration de la `rotation_distance` sur les steppers auxquels est attachée une boîte de vitesses (ou similaire). La plupart des steppers n'ont pas de boîte de vitesses - en cas de doute, ne définissez pas `gear_ratio` dans la configuration.
 
-When `gear_ratio` is set, the `rotation_distance` represents the
-distance the axis moves with one full rotation of the final gear on
-the gear box. If, for example, one is using a gearbox with a "5:1"
-ratio, then one could calculate the rotation_distance with
-[knowledge of the hardware](#obtaining-rotation_distance-by-inspecting-the-hardware)
-and then add `gear_ratio: 5:1` to the config.
+Lorsque `gear_ratio` est défini, la `rotation_distance` représente la distance parcourue par l'axe avec une rotation complète de l'engrenage final sur la boîte de vitesses. Si, par exemple, on utilise une boîte de vitesses avec un rapport "5: 1", alors on pourrait calculer la rotation_distance avec [knowledge of the hardware](#obtaining-rotation_distance-by-inspecting-the-hardware) puis ajoutez `gear_ratio: 5:1` à la configuration.
 
-For gearing implemented with belts and pulleys, it is possible to
-determine the gear_ratio by counting the teeth on the pulleys. For
-example, if a stepper with a 16 toothed pulley drives the next pulley
-with 80 teeth then one would use `gear_ratio: 80:16`. Indeed, one
-could open a common off the shelf "gear box" and count the teeth in it
-to confirm its gear ratio.
+Pour les engrenages mis en œuvre avec des courroies et des poulies, il est possible de déterminer le gear_ratio en comptant les dents sur les poulies. Par exemple, si un moteur pas à pas avec une poulie à 16 dents entraîne la poulie suivante à 80 dents, on utilisera `gear_ratio: 80:16`. En effet, on pourrait ouvrir une "boîte de vitesses" courante et compter les dents qu'elle contient pour confirmer son rapport de démultiplication.
 
-Note that sometimes a gearbox will have a slightly different gear
-ratio than what it is advertised as. The common BMG extruder motor
-gears are an example of this - they are advertised as "3:1" but
-actually use "50:17" gearing. (Using teeth numbers without a common
-denominator may improve overall gear wear as the teeth don't always
-mesh the same way with each revolution.) The common "5.18:1 planetary
-gearbox", is more accurately configured with `gear_ratio: 57:11`.
+Notez que parfois une boîte de vitesses aura un rapport de démultiplication légèrement différent de celui sous lequel elle est annoncée. Les engrenages de moteur d'extrudeuse BMG courants en sont un exemple - ils sont annoncés comme "3: 1" mais utilisent en fait un engrenage "50:17". (L'utilisation de nombres de dents sans dénominateur commun peut améliorer l'usure globale des engrenages car les dents ne s'engrènent pas toujours de la même manière à chaque révolution.) `.
 
-If several gears are used on an axis then it is possible to provide a
-comma separated list to gear_ratio. For example, a "5:1" gear box
-driving a 16 toothed to 80 toothed pulley could use
-`gear_ratio: 5:1, 80:16`.
+Si plusieurs engrenages sont utilisés sur un axe, il est alors possible de fournir une liste séparée par des virgules à gear_ratio. Par exemple, une boîte de vitesses "5: 1" entraînant une poulie de 16 à 80 dents pourrait utiliser `gear_ratio: 5: 1, 80: 16`.
 
-In most cases, gear_ratio should be defined with whole numbers as
-common gears and pulleys have a whole number of teeth on them.
-However, in cases where a belt drives a pulley using friction instead
-of teeth, it may make sense to use a floating point number in the gear
-ratio (eg, `gear_ratio: 107.237:16`).
+Dans la plupart des cas, gear_ratio doit être défini avec des nombres entiers car les engrenages et poulies courants ont un nombre entier de dents. Cependant, dans les cas où une courroie entraîne une poulie en utilisant la friction au lieu des dents, il peut être judicieux d'utiliser un nombre à virgule flottante dans le rapport d'engrenage (par exemple, `gear_ratio: 107.237:16`).
