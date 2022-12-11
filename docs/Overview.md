@@ -64,5 +64,5 @@ Rochers.
 - [Beaglebone](Beaglebone.md) : Détails pour exécuter Klipper sur le Beaglebone PRU.
 - [Bootloaders](Bootloaders.md) : informations pour les développeurs sur micro-contrôleur clignotant.
 - [CAN bus](CANBUS.md) : informations sur l'utilisation du bus CAN avec Klipper.
-- [Capteur de largeur de filament TSL1401CL] (TSL1401CL_Filament_Width_Sensor.md)
-- [Capteur de largeur de filament Hall] (Hall_Filament_Width_Sensor.md)
+- [Capteur de largeur de filament TSL1401CL](TSL1401CL_Filament_Width_Sensor.md)
+- [Capteur de largeur de filament Hall](Hall_Filament_Width_Sensor.md)
