@@ -1,47 +1,27 @@
-# Using PWM tools
+﻿# Utilisation des outils PWM
 
-This document describes how to setup a PWM-controlled laser or spindle
-using `output_pin` and some macros.
+Ce document décrit comment configurer un laser ou une broche contrôlé par PWM à l'aide de "output_pin" et de certaines macros.
 
-## How does it work?
+## Comment ça marche?
 
-With re-purposing the printhead's fan pwm output, you can control
-lasers or spindles.
-This is useful if you use switchable print heads, for example
-the E3D toolchanger or a DIY solution.
-Usually, cam-tools such as LaserWeb can be configured to use `M3-M5`
-commands, which stand for _spindle speed CW_ (`M3 S[0-255]`),
-_spindle speed CCW_ (`M4 S[0-255]`) and _spindle stop_ (`M5`).
+En réaffectant la sortie pwm du ventilateur de la tête d'impression, vous pouvez contrôler les lasers ou les broches. Ceci est utile si vous utilisez des têtes d'impression commutables, par exemple le changeur d'outils E3D ou une solution de bricolage. Habituellement, les outils de came tels que LaserWeb peuvent être configurés pour utiliser les commandes "M3-M5", qui signifient _spindle speed CW_ (`M3 S[0-255]`), _spindle speed CCW_ (`M4 S[0-255]`) et _spindle stop_ (`M5`).
 
+**Avertissement :** Lorsque vous conduisez un laser, respectez toutes les précautions de sécurité auxquelles vous pouvez penser ! Les lasers à diode sont généralement inversés. Cela signifie que lorsque le MCU redémarre, le laser sera _entièrement allumé_ pendant le temps nécessaire au MCU pour redémarrer. Pour faire bonne mesure, il est recommandé de porter _toujours_ des lunettes laser appropriées de la bonne longueur d'onde si le laser est alimenté ; et de déconnecter le laser lorsqu'il n'est pas nécessaire. En outre, vous devez configurer un délai d'expiration de sécurité, de sorte que lorsque votre hôte ou MCU rencontre une erreur, l'outil s'arrête.
 
-**Warning:** When driving a laser, keep all security precautions
-that you can think of! Diode lasers are usually inverted.
-This means, that when the MCU restarts, the laser will be
-_fully on_ for the time it takes the MCU to start up again.
-For good measure, it is recommended to _always_ wear appropriate
-laser-goggles of the right wavelength if the laser is powered;
-and to disconnect the laser when it is not needed.
-Also, you should configure a safety timeout,
-so that when your host or MCU encounters an error, the tool will stop.
+Pour un exemple de configuration, voir  [config/sample-pwm-tool.cfg](/config/sample-pwm-tool.cfg).
 
-For an example configuration, see [config/sample-pwm-tool.cfg](/config/sample-pwm-tool.cfg).
+## Limites actuelles
 
-## Current Limitations
+Il existe une limitation de la fréquence des mises à jour PWM. Tout en étant très précis, une mise à jour PWM ne peut se produire que toutes les 0,1 secondes, ce qui la rend presque inutile pour la gravure raster. Cependant, il existe un [experimental branch](https://github.com/Cirromulus/klipper/tree/laser_tool) avec ses propres compromis. À long terme, il est prévu d'ajouter cette fonctionnalité au klipper de la ligne principale.
 
-There is a limitation of how frequent PWM updates may occur.
-While being very precise, a PWM update may only occur every 0.1 seconds,
-rendering it almost useless for raster engraving.
-However, there exists an [experimental branch](https://github.com/Cirromulus/klipper/tree/laser_tool) with its own tradeoffs.
-In long term, it is planned to add this functionality to main-line klipper.
-
-## Commands
+## Commandes
 
 `M3/M4 S<value>` : Set PWM duty-cycle. Values between 0 and 255.
 `M5` : Stop PWM output to shutdown value.
 
-## Laserweb Configuration
+## Configuration Laser Web
 
-If you use Laserweb, a working configuration would be:
+Si vous utilisez Laserweb, une configuration de travail serait :
 
     GCODE START:
         M5            ; Disable Laser
