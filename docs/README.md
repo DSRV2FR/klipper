@@ -1,2 +1,2 @@
-Welcome to the Klipper documentation. The
-[overview document](Overview.md) is a good starting point.
+﻿Bienvenue dans la documentation de Klipper. La
+[overview document](Overview.md) est un bon point de départ.
