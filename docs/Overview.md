@@ -48,8 +48,8 @@ première.
 met en œuvre le mouvement.
 - [Protocol](Protocol.md) : informations sur la messagerie de bas niveau protocole entre l'hôte et le microcontrôleur.
 - [API Server](API_Server.md) : informations sur la commande de Klipper et API de contrôle.
-- [MCU commands] (MCU_Commands.md) : une description des commandes de bas niveau implémenté dans le logiciel du microcontrôleur.
-- [CAN bus protocol] (CANBUS_protocol.md) : message de bus CAN Klipper format.
+- [MCU commands](MCU_Commands.md) : une description des commandes de bas niveau implémenté dans le logiciel du microcontrôleur.
+- [CAN bus protocol](CANBUS_protocol.md) : message de bus CAN Klipper format.
 - [Debugging](Debugging.md) : informations sur la façon de tester et de déboguer
 Rochers.
 - [Benchmarks](Benchmarks.md) : Informations sur le benchmark Klipper méthode.
