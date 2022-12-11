@@ -1,96 +1,68 @@
-# Overview
+﻿# Aperçu
 
-Welcome to the Klipper documentation. If new to Klipper, start with
-the [features](Features.md) and [installation](Installation.md)
-documents.
+Bienvenue dans la documentation de Klipper. Si vous êtes nouveau sur Klipper, commencez par les [fonctionnalités](Features.md) et [installation] (Installation.md) documents.
 
-## Overview information
+## Informations générales
 
-- [Features](Features.md): A high-level list of features in Klipper.
-- [FAQ](FAQ.md): Frequently asked questions.
-- [Releases](Releases.md): The history of Klipper releases.
-- [Config changes](Config_Changes.md): Recent software changes that
-may require users to update their printer config file.
-- [Contact](Contact.md): Information on bug reporting and general
-communication with the Klipper developers.
+- [Features](Features.md): Une liste de haut niveau des fonctionnalités de Klipper.
+- [FAQ](FAQ.md): Questions fréquemment posées.
+- [Releases](Releases.md): L'histoire des versions de Klipper.
+- [Config changes](Config_Changes.md): Modifications logicielles récentes qui
+peut demander aux utilisateurs de mettre à jour leur fichier de configuration d'imprimante.
+- [Contact](Contact.md): Informations sur les rapports de bugs et informations générales communication avec les développeurs Klipper.
 
-## Installation and Configuration
+## Installation et configuration
 
-- [Installation](Installation.md): Guide to installing Klipper.
-- [Config Reference](Config_Reference.md): Description of config
-  parameters.
-  - [Rotation Distance](Rotation_Distance.md): Calculating the
-    rotation_distance stepper parameter.
-- [Config checks](Config_checks.md): Verify basic pin settings in the
-  config file.
-- [Bed level](Bed_Level.md): Information on "bed leveling" in Klipper.
-  - [Delta calibrate](Delta_Calibrate.md): Calibration of delta
-    kinematics.
-  - [Probe calibrate](Probe_Calibrate.md): Calibration of automatic Z
-    probes.
-  - [BL-Touch](BLTouch.md): Configure a "BL-Touch" Z probe.
-  - [Manual level](Manual_Level.md): Calibration of Z endstops (and
-    similar).
-  - [Bed Mesh](Bed_Mesh.md): Bed height correction based on XY
-    locations.
-  - [Endstop phase](Endstop_Phase.md): Stepper assisted Z endstop
-    positioning.
-- [Resonance compensation](Resonance_Compensation.md): A tool to
-  reduce ringing in prints.
-  - [Measuring resonances](Measuring_Resonances.md): Information on
-    using adxl345 accelerometer hardware to measure resonance.
-- [Pressure advance](Pressure_Advance.md): Calibrate extruder
-  pressure.
-- [G-Codes](G-Codes.md): Information on commands supported by Klipper.
-- [Command Templates](Command_Templates.md): G-Code macros and
-  conditional evaluation.
-  - [Status Reference](Status_Reference.md): Information available to
-    macros (and similar).
-- [TMC Drivers](TMC_Drivers.md): Using Trinamic stepper motor drivers
-  with Klipper.
-- [Multi-MCU Homing](Multi_MCU_Homing.md): Homing and probing using multiple micro-controllers.
-- [Slicers](Slicers.md): Configure "slicer" software for Klipper.
-- [Skew correction](Skew_Correction.md): Adjustments for axes not
-  perfectly square.
-- [PWM tools](Using_PWM_Tools.md): Guide on how to use PWM controlled
-  tools such as lasers or spindles.
-- [Exclude Object](Exclude_Object.md): The guide to the Exclude Objecs
-  implementation.
+- [Installation](Installation.md): Guide d'installation de Klipper.
+- [Config Reference](Config_Reference.md): Description de la configuration
+  paramètres.
+- [Rotation Distance](Rotation_Distance.md): Calcul de la paramètre pas à pas rotation_distance.
+- [Config checks](Config_checks.md): Vérifiez les paramètres de broche de base dans le fichier de configuration.
+- [Bed level](Bed_Level.md): Informations sur le "nivellement du lit" dans Klipper.
+- [Delta calibrate](Delta_Calibrate.md): Étalonnage du delta
+cinématique.
+- [Probe calibrate](Probe_Calibrate.md): Étalonnage du Z automatique sondes.
+- [BL-Touch](BLTouch.md): Configurer une sonde Z "BL-Touch".
+- [Manual level](Manual_Level.md): Étalonnage des butées Z (et similaire).
+- [Bed Mesh](Bed_Mesh.md): Correction de la hauteur du lit basée sur XY Emplacements.
+- [Endstop phase](Endstop_Phase.md): Butée Z assistée pas à pas positionnement.
+- [Resonance compensation](Resonance_Compensation.md): Un outil pour réduire la sonnerie dans les impressions.
+- [Measuring resonances](Measuring_Resonances.md): Des informations sur utilisation du matériel accéléromètre adxl345 pour mesurer la résonance.
+- [Pressure advance](Pressure_Advance.md): Calibrer l'extrudeuse  pression.
+- [G-Codes](G-Codes.md): Informations sur les commandes prises en charge par Klipper.
+- [Command Templates](Command_Templates.md): Macros G-Code et évaluation conditionnelle.
+- [Status Reference](Status_Reference.md): Informations disponibles pour macros (et similaires).
+- [TMC Drivers](TMC_Drivers.md): Utilisation des pilotes de moteur pas à pas Trinamic avec Klipper.
+- [Multi-MCU Homing](Multi_MCU_Homing.md): Prise d'origine et sondage à l'aide de plusieurs microcontrôleurs.
+- [Slicers](Slicers.md): Configurer le logiciel "slicer" pour Klipper.
+- [Skew correction](Skew_Correction.md): Réglages pour axes non parfaitement carré.
+- [PWM tools](Using_PWM_Tools.md): Guide d'utilisation contrôlé par PWM
+  des outils tels que des lasers ou des broches.
+- [Exclude Object](Exclude_Object.md) : le guide des objets Exclude la mise en oeuvre.
 
-## Developer Documentation
+## Documentation pour les développeurs
 
-- [Code overview](Code_Overview.md): Developers should read this
-  first.
-- [Kinematics](Kinematics.md): Technical details on how Klipper
-  implements motion.
-- [Protocol](Protocol.md): Information on the low-level messaging
-  protocol between host and micro-controller.
-- [API Server](API_Server.md): Information on Klipper's command and
-  control API.
-- [MCU commands](MCU_Commands.md): A description of low-level commands
-  implemented in the micro-controller software.
-- [CAN bus protocol](CANBUS_protocol.md): Klipper CAN bus message
-  format.
-- [Debugging](Debugging.md): Information on how to test and debug
-  Klipper.
-- [Benchmarks](Benchmarks.md): Information on the Klipper benchmark
-  method.
-- [Contributing](CONTRIBUTING.md): Information on how to submit
-  improvements to Klipper.
-- [Packaging](Packaging.md): Information on building OS packages.
+- [Aperçu du code] (Code_Overview.md) : les développeurs doivent lire ceci
+première.
+- [Kinematics](Kinematics.md) : Détails techniques sur la façon dont Klipper
+met en œuvre le mouvement.
+- [Protocol](Protocol.md) : informations sur la messagerie de bas niveau protocole entre l'hôte et le microcontrôleur.
+- [API Server](API_Server.md) : informations sur la commande de Klipper et API de contrôle.
+- [Commandes MCU] (MCU_Commands.md) : une description des commandes de bas niveau implémenté dans le logiciel du microcontrôleur.
+- [Protocole de bus CAN] (CANBUS_protocol.md) : message de bus CAN Klipper format.
+- [Debugging](Debugging.md) : informations sur la façon de tester et de déboguer
+Rochers.
+- [Benchmarks](Benchmarks.md) : Informations sur le benchmark Klipper méthode.
+- [Contribuer](CONTRIBUTING.md) : informations sur la façon de soumettre améliorations apportées à Klipper.
+- [Packaging](Packaging.md) : informations sur la création de packages de système d'exploitation.
 
-## Device Specific Documents
+## Documents spécifiques à l'appareil
 
-- [Example configs](Example_Configs.md): Information on adding an
-  example config file to Klipper.
-- [SDCard Updates](SDCard_Updates.md): Flash a micro-controller by
-  copying a binary to an sdcard in the micro-controller.
-- [Raspberry Pi as Micro-controller](RPi_microcontroller.md): Details
-  for controlling devices wired to the GPIO pins of a Raspberry Pi.
-- [Beaglebone](Beaglebone.md): Details for running Klipper on the
-  Beaglebone PRU.
-- [Bootloaders](Bootloaders.md): Developer information on
-  micro-controller flashing.
-- [CAN bus](CANBUS.md): Information on using CAN bus with Klipper.
-- [TSL1401CL filament width sensor](TSL1401CL_Filament_Width_Sensor.md)
-- [Hall filament width sensor](Hall_Filament_Width_Sensor.md)
+- [Example configs](Example_Configs.md) : informations sur l'ajout d'un exemple de fichier de configuration à Klipper.
+- [SDCard Updates](SDCard_Updates.md) : Flasher un micro-contrôleur en copier un binaire sur une carte SD dans le microcontrôleur.
+- [Raspberry Pi comme microcontrôleur](RPi_microcontroller.md) : Détails pour contrôler les appareils câblés aux broches GPIO d'un Raspberry Pi.
+- [Beaglebone](Beaglebone.md) : Détails pour exécuter Klipper sur le Beaglebone PRU.
+- [Bootloaders](Bootloaders.md) : informations pour les développeurs sur micro-contrôleur clignotant.
+- [CAN bus](CANBUS.md) : informations sur l'utilisation du bus CAN avec Klipper.
+- [Capteur de largeur de filament TSL1401CL] (TSL1401CL_Filament_Width_Sensor.md)
+- [Capteur de largeur de filament Hall] (Hall_Filament_Width_Sensor.md)
