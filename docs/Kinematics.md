@@ -1,195 +1,112 @@
-# Kinematics
+# Cinématique
 
-This document provides an overview of how Klipper implements robot
-motion (its [kinematics](https://en.wikipedia.org/wiki/Kinematics)).
-The contents may be of interest to both developers interested in
-working on the Klipper software as well as users interested in better
-understanding the mechanics of their machines.
+Ce document donne un aperçu de la façon dont Klipper implémente le mouvement du robot (sa [cinématique](https://en.wikipedia.org/wiki/Kinematics)). Le contenu peut intéresser aussi bien les développeurs intéressés à travailler sur le logiciel Klipper que les utilisateurs intéressés à mieux comprendre la mécanique de leurs machines.
 
-## Acceleration
+## Accélération
 
-Klipper implements a constant acceleration scheme whenever the print
-head changes velocity - the velocity is gradually changed to the new
-speed instead of suddenly jerking to it. Klipper always enforces
-acceleration between the tool head and the print. The filament leaving
-the extruder can be quite fragile - rapid jerks and/or extruder flow
-changes lead to poor quality and poor bed adhesion. Even when not
-extruding, if the print head is at the same level as the print then
-rapid jerking of the head can cause disruption of recently deposited
-filament. Limiting speed changes of the print head (relative to the
-print) reduces risks of disrupting the print.
+Klipper implémente un schéma d'accélération constante chaque fois que la tête d'impression change de vitesse - la vitesse est progressivement modifiée à la nouvelle vitesse au lieu d'y être brusquement saccadée. Klipper applique toujours une accélération entre la tête de l'outil et l'impression. Le filament quittant l'extrudeuse peut être assez fragile - des secousses rapides et/ou des changements de débit de l'extrudeuse entraînent une mauvaise qualité et une mauvaise adhérence au lit. Même en l'absence d'extrusion, si la tête d'impression est au même niveau que l'impression, une secousse rapide de la tête peut provoquer une rupture du filament récemment déposé. Limiter les changements de vitesse de la tête d'impression (par rapport à l'impression) réduit les risques de perturber l'impression.
 
-It is also important to limit acceleration so that the stepper motors
-do not skip or put excessive stress on the machine. Klipper limits the
-torque on each stepper by virtue of limiting the acceleration of the
-print head. Enforcing acceleration at the print head naturally also
-limits the torque of the steppers that move the print head (the
-inverse is not always true).
+Il est également important de limiter l'accélération afin que les moteurs pas à pas ne sautent pas ou n'exercent pas de contraintes excessives sur la machine. Klipper limite le couple sur chaque stepper en limitant l'accélération de la tête d'impression. L'application d'une accélération au niveau de la tête d'impression limite également naturellement le couple des moteurs pas à pas qui déplacent la tête d'impression (l'inverse n'est pas toujours vrai).
 
-Klipper implements constant acceleration. The key formula for constant
-acceleration is:
+Klipper implémente une accélération constante. La formule clé pour une accélération constante est la suivante :
 ```
 velocity(time) = start_velocity + accel*time
 ```
 
-## Trapezoid generator
+## Générateur trapézoïdal
 
-Klipper uses a traditional "trapezoid generator" to model the motion
-of each move - each move has a start speed, it accelerates to a
-cruising speed at constant acceleration, it cruises at a constant
-speed, and then decelerates to the end speed using constant
-acceleration.
+Klipper utilise un "générateur trapézoïdal" traditionnel pour modéliser le mouvement de chaque mouvement - chaque mouvement a une vitesse de départ, il accélère à une vitesse de croisière à accélération constante, il roule à une vitesse constante, puis décélère jusqu'à la vitesse finale en utilisant une accélération constante .
 
 ![trapezoid](img/trapezoid.svg.png)
 
-It's called a "trapezoid generator" because a velocity diagram of the
-move looks like a trapezoid.
+C'est ce qu'on appelle un "générateur de trapèze" car un diagramme de vitesse du mouvement ressemble à un trapèze.
 
-The cruising speed is always greater than or equal to both the start
-speed and the end speed. The acceleration phase may be of zero
-duration (if the start speed is equal to the cruising speed), the
-cruising phase may be of zero duration (if the move immediately starts
-decelerating after acceleration), and/or the deceleration phase may be
-of zero duration (if the end speed is equal to the cruising speed).
+La vitesse de croisière est toujours supérieure ou égale à la fois à la vitesse de départ et à la vitesse de fin. La phase d'accélération peut être de durée nulle (si la vitesse de démarrage est égale à la vitesse de croisière), la phase de croisière peut être de durée nulle (si le mouvement commence immédiatement à décélérer après l'accélération), et/ou la phase de décélération peut être de zéro durée (si la vitesse finale est égale à la vitesse de croisière).
 
 ![trapezoids](img/trapezoids.svg.png)
 
-## Look-ahead
+## Prévision
 
-The "look-ahead" system is used to determine cornering speeds between
-moves.
+Le système "anticipation" est utilisé pour déterminer les vitesses de virage entre les mouvements.
 
-Consider the following two moves contained on an XY plane:
+Considérez les deux mouvements suivants contenus sur un plan XY :
 
 ![corner](img/corner.svg.png)
 
-In the above situation it is possible to fully decelerate after the
-first move and then fully accelerate at the start of the next move,
-but that is not ideal as all that acceleration and deceleration would
-greatly increase the print time and the frequent changes in extruder
-flow would result in poor print quality.
+Dans la situation ci-dessus, il est possible de décélérer complètement après le premier mouvement, puis d'accélérer complètement au début du mouvement suivant, mais ce n'est pas idéal car toute cette accélération et cette décélération augmenteraient considérablement le temps d'impression et les changements fréquents du débit de l'extrudeuse. entraînerait une mauvaise qualité d'impression.
 
-To solve this, the "look-ahead" mechanism queues multiple incoming
-moves and analyzes the angles between moves to determine a reasonable
-speed that can be obtained during the "junction" between two moves. If
-the next move is nearly in the same direction then the head need only
-slow down a little (if at all).
+Pour résoudre ce problème, le mécanisme de "prévision" met en file d'attente plusieurs mouvements entrants et analyse les angles entre les mouvements pour déterminer une vitesse raisonnable pouvant être obtenue lors de la "jonction" entre deux mouvements. Si le mouvement suivant est presque dans la même direction, la tête n'a qu'à ralentir un peu (voire pas du tout).
 
 ![lookahead](img/lookahead.svg.png)
 
-However, if the next move forms an acute angle (the head is going to
-travel in nearly a reverse direction on the next move) then only a
-small junction speed is permitted.
+Cependant, si le mouvement suivant forme un angle aigu (la tête va se déplacer presque dans le sens inverse lors du mouvement suivant), seule une petite vitesse de jonction est autorisée.
 
 ![lookahead](img/lookahead-slow.svg.png)
+Les vitesses de jonction sont déterminées en utilisant "l'accélération centripète approchée". Meilleur [décrit par l'auteur](https://onehossshay.wordpress.com/2011/09/24/improving_grbl_cornering_algorithm/). Cependant, dans Klipper, les vitesses de jonction sont configurées en spécifiant la vitesse souhaitée qu'un coin à 90 ° devrait avoir (la "vitesse de coin carré"), et les vitesses de jonction pour les autres angles en sont dérivées.
 
-The junction speeds are determined using "approximated centripetal
-acceleration". Best
-[described by the author](https://onehossshay.wordpress.com/2011/09/24/improving_grbl_cornering_algorithm/).
-However, in Klipper, junction speeds are configured by specifying the
-desired speed that a 90° corner should have (the "square corner
-velocity"), and the junction speeds for other angles are derived from
-that.
-
-Key formula for look-ahead:
+Formule clé pour l'anticipation :
 ```
 end_velocity^2 = start_velocity^2 + 2*accel*move_distance
 ```
 
-### Smoothed look-ahead
+### Anticipation lissée
 
-Klipper also implements a mechanism for smoothing out the motions of
-short "zigzag" moves. Consider the following moves:
+Klipper implémente également un mécanisme pour lisser les mouvements de mouvements courts en "zigzag". Considérez les mouvements suivants :
 
 ![zigzag](img/zigzag.svg.png)
 
-In the above, the frequent changes from acceleration to deceleration
-can cause the machine to vibrate which causes stress on the machine
-and increases the noise. To reduce this, Klipper tracks both regular
-move acceleration as well as a virtual "acceleration to deceleration"
-rate. Using this system, the top speed of these short "zigzag" moves
-are limited to smooth out the printer motion:
+Dans ce qui précède, les changements fréquents de l'accélération à la décélération peuvent faire vibrer la machine, ce qui provoque une contrainte sur la machine et augmente le bruit. Pour réduire cela, Klipper suit à la fois l'accélération de mouvement régulière ainsi qu'un taux virtuel "d'accélération à décélération". Grâce à ce système, la vitesse maximale de ces mouvements courts en "zigzag" est limitée pour lisser le mouvement de l'imprimante :
 
 ![smoothed](img/smoothed.svg.png)
 
-Specifically, the code calculates what the velocity of each move would
-be if it were limited to this virtual "acceleration to deceleration"
-rate (half the normal acceleration rate by default). In the above
-picture the dashed gray lines represent this virtual acceleration rate
-for the first move. If a move can not reach its full cruising speed
-using this virtual acceleration rate then its top speed is reduced to
-the maximum speed it could obtain at this virtual acceleration
-rate. For most moves the limit will be at or above the move's existing
-limits and no change in behavior is induced. For short zigzag moves,
-however, this limit reduces the top speed. Note that it does not
-change the actual acceleration within the move - the move continues to
-use the normal acceleration scheme up to its adjusted top-speed.
+Plus précisément, le code calcule quelle serait la vitesse de chaque mouvement s'il était limité à ce taux virtuel "d'accélération à décélération" (la moitié du taux d'accélération normal par défaut). Dans l'image ci-dessus, les lignes grises en pointillés représentent ce taux d'accélération virtuelle pour le premier coup. Si un mouvement ne peut pas atteindre sa pleine vitesse de croisière en utilisant ce taux d'accélération virtuel, alors sa vitesse maximale est réduite à la vitesse maximale qu'il pourrait obtenir à ce taux d'accélération virtuel. Pour la plupart des mouvements, la limite sera égale ou supérieure aux limites existantes du mouvement et aucun changement de comportement n'est induit. Pour les déplacements courts en zigzag,
+cependant, cette limite réduit la vitesse maximale. Notez que cela ne change pas l'accélération réelle dans le mouvement - le mouvement continue d'utiliser le schéma d'accélération normal jusqu'à sa vitesse maximale ajustée.
 
-## Generating steps
+## Étapes de génération
 
-Once the look-ahead process completes, the print head movement for the
-given move is fully known (time, start position, end position,
-velocity at each point) and it is possible to generate the step times
-for the move. This process is done within "kinematic classes" in the
-Klipper code. Outside of these kinematic classes, everything is
-tracked in millimeters, seconds, and in cartesian coordinate space.
-It's the task of the kinematic classes to convert from this generic
-coordinate system to the hardware specifics of the particular printer.
+Une fois le processus d'anticipation terminé, le mouvement de la tête d'impression pour le mouvement donné est entièrement connu (heure, position de départ, position finale, vitesse à chaque point) et il est possible de générer les temps de pas pour le mouvement. Ce processus est effectué dans les "classes cinématiques" du code Klipper. En dehors de ces classes cinématiques, tout est suivi en millimètres, en secondes et dans l'espace de coordonnées cartésiennes. C'est la tâche des classes cinématiques de convertir de ce système de coordonnées générique aux spécificités matérielles de l'imprimante particulière.
 
-Klipper uses an
-[iterative solver](https://en.wikipedia.org/wiki/Root-finding_algorithm)
-to generate the step times for each stepper. The code contains the
-formulas to calculate the ideal cartesian coordinates of the head at
-each moment in time, and it has the kinematic formulas to calculate
-the ideal stepper positions based on those cartesian coordinates. With
-these formulas, Klipper can determine the ideal time that the stepper
-should be at each step position. The given steps are then scheduled at
-these calculated times.
+Les clips ne sont pas utilisés [solveur itératif](https://en.wikipedia.org/wiki/Root-finding_algorithm) pour générer les temps de pas pour chaque stepper. Le code contient les formules pour calculer les coordonnées cartésiennes idéales de la tête à chaque instant, et il contient les formules cinématiques pour calculer les positions pas à pas idéales en fonction de ces coordonnées cartésiennes. Avec ces formules, Klipper peut déterminer le moment idéal où le stepper doit être à chaque position de pas. Les étapes données sont alors ordonnancées à ces instants calculés.
 
-The key formula to determine how far a move should travel under
-constant acceleration is:
+La formule clé pour déterminer la distance qu'un mouvement doit parcourir sous une accélération constante est:
 ```
 move_distance = (start_velocity + .5 * accel * move_time) * move_time
 ```
-and the key formula for movement with constant velocity is:
+et la formule clé pour un mouvement à vitesse constante est :
 ```
 move_distance = cruise_velocity * move_time
 ```
 
-The key formulas for determining the cartesian coordinate of a move
-given a move distance is:
+Les formules clés pour déterminer la coordonnée cartésienne d'un mouvement étant donné une distance de mouvement sont:
 ```
 cartesian_x_position = start_x + move_distance * total_x_movement / total_movement
 cartesian_y_position = start_y + move_distance * total_y_movement / total_movement
 cartesian_z_position = start_z + move_distance * total_z_movement / total_movement
 ```
 
-### Cartesian Robots
+### Robots cartésiens
 
-Generating steps for cartesian printers is the simplest case. The
-movement on each axis is directly related to the movement in cartesian
-space.
+La génération d'étapes pour les imprimantes cartésiennes est le cas le plus simple. Le mouvement sur chaque axe est directement lié au mouvement dans l'espace cartésien.
 
-Key formulas:
+Formules clés :
 ```
 stepper_x_position = cartesian_x_position
 stepper_y_position = cartesian_y_position
 stepper_z_position = cartesian_z_position
 ```
 
-### CoreXY Robots
+### Robots CoreXY
 
-Generating steps on a CoreXY machine is only a little more complex
-than basic cartesian robots. The key formulas are:
+La génération d'étapes sur une machine CoreXY n'est qu'un peu plus complexe que les robots cartésiens de base. Les formules clés sont :
 ```
 stepper_a_position = cartesian_x_position + cartesian_y_position
 stepper_b_position = cartesian_x_position - cartesian_y_position
 stepper_z_position = cartesian_z_position
 ```
 
-### Delta Robots
+### Delta Robots
 
-Step generation on a delta robot is based on Pythagoras's theorem:
+La génération de pas sur un robot delta est basée sur le théorème de Pythagore :
 ```
 stepper_position = (sqrt(arm_length^2
                          - (cartesian_x_position - tower_x_position)^2
@@ -197,94 +114,43 @@ stepper_position = (sqrt(arm_length^2
                     + cartesian_z_position)
 ```
 
-### Stepper motor acceleration limits
+### Limites d'accélération du moteur pas à pas
 
-With delta kinematics it is possible for a move that is accelerating
-in cartesian space to require an acceleration on a particular stepper
-motor greater than the move's acceleration. This can occur when a
-stepper arm is more horizontal than vertical and the line of movement
-passes near that stepper's tower. Although these moves could require a
-stepper motor acceleration greater than the printer's maximum
-configured move acceleration, the effective mass moved by that stepper
-would be smaller. Thus the higher stepper acceleration does not result
-in significantly higher stepper torque and it is therefore considered
-harmless.
+Avec la cinématique delta, il est possible qu'un mouvement qui s'accélère dans l'espace cartésien nécessite une accélération sur un moteur pas à pas particulier supérieure à l'accélération du mouvement. Cela peut se produire lorsqu'un bras de stepper est plus horizontal que vertical et que la ligne de mouvement passe près de la tour de ce stepper. Bien que ces mouvements puissent nécessiter une accélération du moteur pas à pas supérieure à l'accélération de mouvement maximale configurée de l'imprimante, la masse effective déplacée par ce moteur pas à pas serait plus petite. Ainsi, l'accélération pas à pas plus élevée n'entraîne pas un couple pas à pas significativement plus élevé et elle est donc considérée comme inoffensive.
 
-However, to avoid extreme cases, Klipper enforces a maximum ceiling on
-stepper acceleration of three times the printer's configured maximum
-move acceleration. (Similarly, the maximum velocity of the stepper is
-limited to three times the maximum move velocity.) In order to enforce
-this limit, moves at the extreme edge of the build envelope (where a
-stepper arm may be nearly horizontal) will have a lower maximum
-acceleration and velocity.
+Cependant, pour éviter les cas extrêmes, Klipper applique un plafond maximal sur l'accélération pas à pas de trois fois l'accélération de déplacement maximale configurée de l'imprimante. (De même, la vitesse maximale du stepper est limitée à trois fois la vitesse de déplacement maximale.) Afin d'appliquer cette limite, les mouvements à l'extrême bord de l'enveloppe de construction (où un bras stepper peut être presque horizontal) auront une valeur inférieure accélération et vitesse maximales.
 
-### Extruder kinematics
+### Cinématique de l'extrudeuse
 
-Klipper implements extruder motion in its own kinematic class. Since
-the timing and speed of each print head movement is fully known for
-each move, it's possible to calculate the step times for the extruder
-independently from the step time calculations of the print head
-movement.
+Klipper implémente le mouvement de l'extrudeuse dans sa propre classe cinématique. Étant donné que la synchronisation et la vitesse de chaque mouvement de la tête d'impression sont entièrement connues pour chaque mouvement, il est possible de calculer les temps de pas pour l'extrudeuse indépendamment des calculs de temps de pas du mouvement de la tête d'impression.
 
-Basic extruder movement is simple to calculate. The step time
-generation uses the same formulas that cartesian robots use:
+Le mouvement de base de l'extrudeuse est simple à calculer. La génération de temps de pas utilise les mêmes formules que les robots cartésiens :
 ```
 stepper_position = requested_e_position
 ```
 
-### Pressure advance
+### Avance de pression
 
-Experimentation has shown that it's possible to improve the modeling
-of the extruder beyond the basic extruder formula. In the ideal case,
-as an extrusion move progresses, the same volume of filament should be
-deposited at each point along the move and there should be no volume
-extruded after the move. Unfortunately, it's common to find that the
-basic extrusion formulas cause too little filament to exit the
-extruder at the start of extrusion moves and for excess filament to
-extrude after extrusion ends. This is often referred to as "ooze".
+L'expérimentation a montré qu'il est possible d'améliorer la modélisation de l'extrudeuse au-delà de la formule de base de l'extrudeuse. Dans le cas idéal, à mesure qu'un mouvement d'extrusion progresse, le même volume de filament doit être déposé à chaque point le long du mouvement et il ne doit y avoir aucun volume extrudé après le mouvement. Malheureusement, il est courant de constater que les formules d'extrusion de base font que trop peu de filaments sortent de l'extrudeuse au début des mouvements d'extrusion et que l'excès de filaments s'extrude après la fin de l'extrusion. Ceci est souvent appelé "ooze".
 
 ![ooze](img/ooze.svg.png)
 
-The "pressure advance" system attempts to account for this by using a
-different model for the extruder. Instead of naively believing that
-each mm^3 of filament fed into the extruder will result in that amount
-of mm^3 immediately exiting the extruder, it uses a model based on
-pressure. Pressure increases when filament is pushed into the extruder
-(as in [Hooke's law](https://en.wikipedia.org/wiki/Hooke%27s_law)) and
-the pressure necessary to extrude is dominated by the flow rate
-through the nozzle orifice (as in
-[Poiseuille's law](https://en.wikipedia.org/wiki/Poiseuille_law)). The
-key idea is that the relationship between filament, pressure, and flow
-rate can be modeled using a linear coefficient:
+Le système "d'avance de pression" tente de tenir compte de cela en utilisant un modèle différent pour l'extrudeuse. Au lieu de croire naïvement que chaque mm ^ 3 de filament introduit dans l'extrudeuse entraînera cette quantité de mm ^ 3 sortant immédiatement de l'extrudeuse, il utilise un modèle basé sur la pression. La pression augmente lorsque le filament est poussé dans l'extrudeuse (as in [Hooke's law](https://en.wikipedia.org/wiki/Hooke%27s_law)) et la pression nécessaire pour extruder est dominée par le débit à travers l'orifice de la buse (as in [Poiseuille's law](https://en.wikipedia.org/wiki/Poiseuille_law)). L'idée clé est que la relation entre le filament, la pression et le débit peut être modélisée à l'aide d'un coefficient linéaire :
 ```
 pa_position = nominal_position + pressure_advance_coefficient * nominal_velocity
 ```
 
-See the [pressure advance](Pressure_Advance.md) document for
-information on how to find this pressure advance coefficient.
+Voir le[pressure advance](Pressure_Advance.md) document pour savoir comment trouver ce coefficient d'avance de pression.
 
-The basic pressure advance formula can cause the extruder motor to
-make sudden velocity changes. Klipper implements "smoothing" of the
-extruder movement to avoid this.
+La formule d'avance de pression de base peut amener le moteur de l'extrudeuse à effectuer des changements de vitesse soudains. Outils Klipper "smoothing - lissage" du mouvement de l'extrudeuse pour éviter cela.
 
 ![pressure-advance](img/pressure-velocity.png)
 
-The above graph shows an example of two extrusion moves with a
-non-zero cornering velocity between them. Note that the pressure
-advance system causes additional filament to be pushed into the
-extruder during acceleration. The higher the desired filament flow
-rate, the more filament must be pushed in during acceleration to
-account for pressure. During head deceleration the extra filament is
-retracted (the extruder will have a negative velocity).
+Le graphique ci-dessus montre un exemple de deux mouvements d'extrusion avec une vitesse de virage non nulle entre eux. Notez que le système d'avance de pression provoque la poussée de filament supplémentaire dans l'extrudeuse lors de l'accélération. Plus le débit de filament souhaité est élevé, plus le filament doit être poussé pendant l'accélération pour tenir compte de la pression. Pendant la décélération de la tête, le filament supplémentaire est rétracté (l'extrudeuse aura une vitesse négative).
 
-The "smoothing" is implemented using a weighted average of the
-extruder position over a small time period (as specified by the
-`pressure_advance_smooth_time` config parameter). This averaging can
-span multiple g-code moves. Note how the extruder motor will start
-moving prior to the nominal start of the first extrusion move and will
-continue to move after the nominal end of the last extrusion move.
+Le "lissage" est implémenté en utilisant une moyenne pondérée de la position de l'extrudeuse sur une petite période de temps (comme spécifié par le paramètre de configuration `pressure_advance_smooth_time`). Cette moyenne peut couvrir plusieurs mouvements de code g. Notez comment le moteur de l'extrudeuse commencera à se déplacer avant le début nominal du premier mouvement d'extrusion et continuera à se déplacer après la fin nominale du dernier mouvement d'extrusion.
 
-Key formula for "smoothed pressure advance":
+Formule clé pour "smoothed pressure advance":
 ```
 smooth_pa_position(t) =
     ( definitive_integral(pa_position(x) * (smooth_time/2 - abs(t - x)) * dx,
